@@ -1,0 +1,2 @@
+Framebatch_Dreamy_Pastel.xmp is Framebatch's own original look (soft, airy and pastel, in the spirit of community camera recipes; it does not reproduce any manufacturer's film simulation). Its Clarity -50 is rendered by Framebatch as Glow 30.
+Framebatch_Golden_Glow.xmp is also Framebatch's own original look (warm golden-hour autumn tones, tuned by measuring reference photos supplied by the owner; no reference images are included). Its Clarity -20 is rendered as Glow 12.

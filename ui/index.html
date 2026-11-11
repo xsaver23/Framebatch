@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Framebatch — Process Multiple Files</title><script src="theme.js"></script><link rel="stylesheet" href="style.css"></head>
+<body>
+<svg class="sprite" aria-hidden="true">
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7.5A1.5 1.5 0 0 1 4.5 6H9l2 2h8.5A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/></symbol>
+<symbol id="i-photos" viewBox="0 0 24 24"><rect x="6.5" y="3" width="14.5" height="12.5" rx="2"/><path d="M3 7.5V18a2 2 0 0 0 2 2h11.5"/><circle cx="11" cy="7.8" r="1.4"/><path d="m21 12.5-3.8-3.8-6.7 6.8"/></symbol>
+<symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M11 3.5l1.7 4.8 4.8 1.7-4.8 1.7L11 16.5l-1.7-4.8L4.5 10l4.8-1.7z"/><path d="M18.5 14.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></symbol>
+<symbol id="i-left" viewBox="0 0 24 24"><path d="m14.5 6-6 6 6 6"/></symbol>
+<symbol id="i-right" viewBox="0 0 24 24"><path d="m9.5 6 6 6-6 6"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9.5 6 6 6-6"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M2.5 12h2M19.5 12h2M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M19.5 14.5A7.5 7.5 0 1 1 9.5 4.5a6 6 0 0 0 10 10z"/></symbol>
+<symbol id="i-expand" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+<symbol id="i-collapse" viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-reset" viewBox="0 0 24 24"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v4h4"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3.5H7.5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V8z"/><path d="M14 3.5V8h4.5"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v4.5M12 15.8v.2"/></symbol>
+</svg>
+<header class="appbar">
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="logo-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4fa3ff"/><stop offset="1" stop-color="#7a5cff"/></linearGradient></defs><rect x="9" y="3" width="20" height="16" rx="4" fill="url(#logo-g)" opacity=".45"/><rect x="3" y="9" width="22" height="19" rx="4.5" fill="url(#logo-g)"/><circle cx="10.5" cy="15.5" r="2.3" fill="#fff"/><path d="M6 25.5l6-6 3.5 3.5 3-3 4 4" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>
+    <div class="brand-text"><h1>Framebatch</h1><span>Process Multiple Files</span></div>
+    <span class="pilot">Personal pilot</span>
+  </div>
+  <div class="appbar-tools">
+    <button id="theme-toggle" class="icon-button" type="button" aria-label="Use light theme" title="Use light theme"><svg class="ic"><use href="#i-sun"/></svg></button>
+  </div>
+</header>
+<aside id="recovery" class="infobar" hidden><svg class="ic"><use href="#i-alert"/></svg><div class="infobar-text"><strong>An unfinished batch is available.</strong><p id="recovery-note"></p></div><button id="resume" class="accent">Resume batch</button><button id="dismiss-recovery" class="subtle">Dismiss</button></aside>
+<main id="settings" class="workspace">
+<aside class="panel panel-left" aria-label="Batch settings"><div class="panel-scroll">
+  <fieldset class="section">
+    <legend>Photos</legend>
+    <div class="field-row"><label for="source-mode">Process</label><select id="source-mode"><option value="folder">A folder</option><option value="files">Selected files</option></select></div>
+    <label for="source" class="field-label">Source</label>
+    <div class="path"><input id="source" placeholder="Choose a folder of photos" spellcheck="false"><button id="browse-source" class="browse" title="Browse for photos"><svg class="ic"><use href="#i-folder"/></svg>Browse…</button></div>
+    <label class="check switch-row"><input type="checkbox" id="recursive" class="switch">Include all subfolders</label>
+    <div class="scan-row"><button id="scan" class="small">Scan photos</button><span id="count" class="chip">No source selected</span></div>
+  </fieldset>
+  <fieldset class="section">
+    <legend>Destination</legend>
+    <label for="destination" class="field-label">Save to</label>
+    <div class="path"><input id="destination" placeholder="Choose a separate output folder" spellcheck="false"><button id="browse-destination" class="browse" title="Browse for output folder"><svg class="ic"><use href="#i-folder"/></svg>Browse…</button></div>
+    <p class="hint">Originals are never changed. You can also drop photos or a folder anywhere in this window.</p>
+    <div class="field-row"><label for="suffix">Add suffix</label><input id="suffix" value="-edited" maxlength="80"></div>
+    <p class="hint" id="name-example">Example: DSC01234-edited.jpg</p>
+  </fieldset>
+  <fieldset class="section">
+    <legend>Image size</legend>
+    <label class="check switch-row"><input id="resize" type="checkbox" class="switch">Resize images</label>
+    <div class="dimensions"><label>Width<input id="width" type="number" min="0.001" step="any" value="6"></label><span class="times">×</span><label>Height<input id="height" type="number" min="0.001" step="any" value="4"></label><label class="unit">Units<select id="unit"><option value="pixels">pixels</option><option value="inches" selected>inches</option><option value="cm">centimeters</option><option value="mm">millimeters</option><option value="percent">percent</option></select></label></div>
+    <label for="fit" class="field-label">When the photo's shape differs from the box</label>
+    <select id="fit" class="wide"><option value="fit" selected>Fit whole photo</option><option value="fill">Fill and crop to exact size</option><option value="border">Fit with white border to exact size</option><option value="stretch">Stretch to exact size</option></select>
+    <label class="check"><input id="match-orientation" type="checkbox" checked>Turn box to match each photo <span class="hint inline">(portrait or landscape)</span></label>
+    <label for="density-mode" class="field-label">Print resolution (PPI / DPI)</label>
+    <div class="ppi-row"><select id="density-mode"><option value="keep">Keep original</option><option value="set">Set to</option></select><input id="ppi" type="number" min="1" max="65535" step="1" value="300" aria-label="Print resolution"><span class="unit-text">ppi</span></div>
+    <p class="hint" id="unit-note" hidden></p><p class="hint" id="size-help">Resize is off: pixel dimensions stay unchanged. PPI is the number of image pixels per printed inch.</p>
+  </fieldset>
+  <fieldset class="section">
+    <legend>File type</legend>
+    <div class="format-row"><label for="format">Save as</label><select id="format"><option value="jpeg">JPEG</option><option value="png">PNG</option><option value="webp">WebP (lossless)</option></select><label id="quality-label">Quality <input id="quality" type="number" min="1" max="100" value="92"></label></div>
+    <label class="check switch-row"><input id="retain-capture" type="checkbox" class="switch">Keep capture date, camera &amp; exposure (no GPS)</label>
+    <p id="format-note" class="hint">sRGB color · White background for transparency · Camera and GPS tags removed</p>
+    <div class="output-card"><span class="output-label">Output</span><p id="summary" class="summary" aria-live="polite">Select a photo to see its output size.</p></div>
+  </fieldset>
+  <details class="section performance"><summary>Batch performance</summary><div class="perf-row"><label>Workers <select id="workers"><option>1</option><option selected>2</option><option>4</option><option>6</option></select></label><label>Memory <select id="memory"><option value="512">512 MiB</option><option value="1024" selected>1 GiB</option><option value="1536">1.5 GiB</option><option value="3072">3 GiB</option><option value="6144">6 GiB</option></select></label></div><p class="hint">Batch memory is reserved before decoding. Preview has a separate 768 MiB limit. Large photos may use fewer workers.</p></details>
+</div></aside>
+
+<section id="stage" aria-label="Preview">
+  <div class="stage-bar">
+    <div class="stage-title"><span id="selected-name">No photo selected</span><span id="preview-caption"></span></div>
+    <div class="stage-tools">
+      <div class="segmented" id="view-switch" role="group" aria-label="Preview view"><button type="button" data-view="split" aria-pressed="true">Before / After</button><button type="button" data-view="after" aria-pressed="false">After</button><button type="button" data-view="before" aria-pressed="false">Before</button></div>
+      <label class="toggle-button" title="100% detail: center crop of the exported size"><input id="detail" type="checkbox">100%</label>
+      <button id="preview-open" class="icon-button" type="button" disabled aria-pressed="false" aria-label="Enlarge preview (hide batch settings)" title="Enlarge preview (hide batch settings)"><svg class="ic"><use href="#i-expand"/></svg></button>
+    </div>
+  </div>
+  <div class="stage-view" id="stage-view">
+    <div class="loading-bar" aria-hidden="true"></div>
+    <div id="stage-empty" class="empty">
+      <svg class="empty-icon" aria-hidden="true"><use href="#i-photos"/></svg>
+      <h2 id="empty-title">Choose photos to get started</h2>
+      <p id="empty-text">Pick a folder of JPEG, PNG or WebP photos, or drop photos or a folder anywhere in this window.</p>
+      <button id="empty-browse" class="accent" type="button"><svg class="ic"><use href="#i-folder"/></svg>Choose a folder…</button>
+    </div>
+    <div class="comparison" id="comparison" data-view="split" hidden><figure><figcaption>Before</figcaption><img id="before" alt="Original photo"></figure><figure><figcaption>After</figcaption><img id="after" alt="Photo with your settings"></figure></div>
+    <button id="preview-previous" class="nav-arrow prev" type="button" aria-label="Previous photo"><svg class="ic"><use href="#i-left"/></svg></button>
+    <button id="preview-next" class="nav-arrow next" type="button" aria-label="Next photo"><svg class="ic"><use href="#i-right"/></svg></button>
+  </div>
+  <div class="stage-meta"><span id="preview-only" class="busy-note" hidden>Batch running: adjustment changes affect this preview and your next batch.</span><span class="hint">Preview uses the same per-photo analysis as export.</span><span id="preview-time"></span></div>
+  <div class="filmstrip-bar">
+    <div class="pages"><button id="previous" class="icon-button small" type="button" aria-label="Previous 50 photos" title="Previous 50 photos"><svg class="ic"><use href="#i-left"/></svg></button><span id="page-label"></span><button id="next" class="icon-button small" type="button" aria-label="Next 50 photos" title="Next 50 photos"><svg class="ic"><use href="#i-right"/></svg></button></div>
+    <div id="filmstrip" role="group" aria-label="Photos"></div>
+  </div>
+</section>
+
+<aside class="panel panel-right" aria-label="Corrections"><div class="panel-scroll">
+  <fieldset class="section">
+    <legend>Quick Fix</legend>
+    <div class="fixes">
+      <label class="tile"><input id="levels" type="checkbox" checked><span class="tile-name">Auto Levels</span><span class="tile-desc">Balances each color channel</span></label>
+      <label class="tile"><input id="contrast" type="checkbox" checked><span class="tile-name">Auto Contrast</span><span class="tile-desc">Stretches overall brightness</span></label>
+      <label class="tile"><input id="color" type="checkbox"><span class="tile-name">Auto Color</span><span class="tile-desc">Removes color casts</span></label>
+      <label class="tile"><input id="sharpen" type="checkbox"><span class="tile-name">Sharpen</span><span class="tile-desc">Crisper fine detail</span></label>
+    </div>
+    <div class="button-row"><button id="auto-fix"><svg class="ic"><use href="#i-sparkle"/></svg>Auto Fix</button><button id="clear-fixes" class="subtle">Clear fixes</button></div>
+    <p class="hint">Each photo gets its own automatic correction. Settings apply to the whole batch.</p>
+  </fieldset>
+  <fieldset class="section">
+    <legend>Look</legend>
+    <div class="label-row"><label class="field-label" for="preset-select">Lightroom preset</label><button id="preset-choose" type="button" class="subtle small" title="Use a Lightroom .xmp or .lrtemplate preset file"><svg class="ic"><use href="#i-file"/></svg>From file…</button></div>
+    <select id="preset-select" class="full"><option value="none">None</option></select><input id="preset-file" type="file" accept=".xmp,.lrtemplate" hidden>
+    <p class="hint" id="preset-note" aria-live="polite"></p>
+    <details id="preset-details" class="preset-details" hidden><summary>What this preset changes</summary><ul id="preset-list"></ul></details>
+  </fieldset>
+  <details id="manual-details" class="section manual" open>
+    <summary>Adjustments</summary>
+    <div id="adjust"></div>
+    <button id="reset-manual" class="subtle reset-button"><svg class="ic"><use href="#i-reset"/></svg>Reset adjustments</button>
+    <p class="hint">Double-click a slider's name to reset just that slider.</p>
+  </details>
+</div></aside>
+</main>
+
+<footer id="actionbar">
+  <div id="error" role="alert" hidden></div>
+  <div id="error-report" hidden><div id="errors"></div><div class="errors-nav"><button id="errors-previous" class="small">Previous errors</button><span id="errors-page"></span><button id="errors-next" class="small">Next errors</button></div></div>
+  <section id="status" aria-label="Batch status"><span id="status-live" class="sr-only" aria-live="polite"></span><div class="status-line"><span id="status-text">Choose a source and destination to begin.</span><span id="control-time"></span></div><progress aria-label="Photos processed" id="progress-bar" max="1" value="0" hidden></progress></section>
+  <div class="actions">
+    <button id="open-output" hidden><svg class="ic"><use href="#i-folder"/></svg>Open output folder</button><button id="resume-current" hidden>Resume batch</button><button id="retry" hidden>Retry failed</button><button id="show-errors" hidden>View errors</button>
+    <button id="pause" hidden>Pause</button><button id="cancel" hidden>Cancel</button><button id="process" class="primary" disabled><svg class="ic"><use href="#i-play"/></svg>Process Photos</button>
+  </div>
+</footer>
+<dialog id="close-dialog" aria-labelledby="close-title"><h2 id="close-title">A batch is still active</h2><p id="close-note">Keep processing, or cancel safely and close. You can resume unfinished photos next time.</p><div class="dialog-actions"><button id="keep-processing" class="accent">Keep processing</button><button id="cancel-close">Cancel batch &amp; close</button></div></dialog>
+<script src="app.js"></script></body></html>

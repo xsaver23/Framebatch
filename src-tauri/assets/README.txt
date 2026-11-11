@@ -1,0 +1,1 @@
+Standard sRGB ICC profile serialized from lcms2::Profile::new_srgb(). The optional profile ID is zero; the creation timestamp is fixed to 2026-01-01 00:00:00 for reproducible exports. No photographic metadata or pixels are included.

@@ -1,0 +1,13 @@
+{
+  "name": "framebatch",
+  "version": "0.9.0",
+  "private": true,
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build --bundles nsis -- --bin framebatch",
+    "test": "cargo test --manifest-path src-tauri/Cargo.toml"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.10.0"
+  }
+}
