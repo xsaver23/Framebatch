@@ -23,7 +23,13 @@ Screenshots use synthetic demo photos.
 
 ## Installation and build
 
-Framebatch 0.9.0 targets **Windows 11 x64**. Build the installer from a checkout of this repository.
+[Download Framebatch 0.9.0 for Windows x64 (ZIP)](https://github.com/xsaver23/Framebatch/actions/runs/43035030465/artifacts/13863382861)
+
+Sign in to GitHub to download. Unzip the file and run the unsigned `Framebatch_0.9.0_x64-setup.exe`. This download expires February 9, 2027.
+
+### Build from source
+
+Framebatch targets **Windows 11 x64**.
 
 1. Install Node.js 22, Visual Studio 2022 C++ Build Tools, the Windows SDK, and the WebView2 Runtime.
 2. Install the pinned Rust toolchain with the x64 MSVC target, Rustfmt, and Clippy.
