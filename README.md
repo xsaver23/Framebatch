@@ -1,30 +1,29 @@
 # Framebatch
 
-Framebatch 0.9.0 is a Windows x64 desktop pilot for batch photo resizing, color correction, and export. It opens directly to **Process Multiple Files**. The desktop app uses Tauri 2 and WebView2, and the companion CLI uses the same Rust processing engine.
+Resize and export photos in batches on Windows. Apply your own Lightroom `.xmp` presets to the whole batch.
 
 ## Features
 
-- **Batch resize and export.** Set dimensions in pixels, physical units, or percent. Fit, center crop, add a white border, or stretch to an exact size. Set print density independently of resizing.
-- **Before and after preview.** Compare the selected photo, zoom to 100%, and move through the batch with the filmstrip.
-- **Quick Fix and manual adjustments.** Apply Auto Levels, Auto Contrast, Auto Color, and Sharpen. Fine-tune tone, color, grading, and effects.
-- **Lightroom preset import.** Use the original **Dreamy Pastel** and **Golden Glow** looks or load a Lightroom/Camera Raw develop preset with **From file…**.
-- **Safe exports and recovery.** Framebatch preserves originals and existing exports. Jobs can be paused, cancelled, and resumed from local SQLite journals.
+- Batch resize and export to JPEG, PNG, or WebP.
+- Import Lightroom presets or choose **Dreamy Pastel** or **Golden Glow**.
+- Compare before and after with Quick Fix and manual adjustments.
+- Pause and resume batches. Framebatch preserves originals and existing exports.
 
 ## Screenshots
 
-**Before / After.** Golden Glow applied to an alpine lake demo image, with batch sizing controls and the filmstrip in view.
+*Golden Glow before and after*
 
-![Framebatch in dark mode comparing the original alpine lake image with the Golden Glow preview](docs/screenshots/before-after.png)
+![Framebatch comparing the original alpine lake image with the Golden Glow preview](docs/screenshots/before-after.png)
 
-**Batch export.** Light mode with the processed coastline in view and two successful exports in the status bar.
+*Completed batch in light mode*
 
 ![Framebatch showing two successful demo exports](docs/screenshots/batch-export.png)
 
-Both screenshots are captures of the running Windows app using synthetic demo images.
+Screenshots use synthetic demo photos.
 
 ## Installation and build
 
-Framebatch targets **Windows 11 x64**. Build the installer from a checkout of this repository.
+Framebatch 0.9.0 targets **Windows 11 x64**. Build the installer from a checkout of this repository.
 
 1. Install Node.js 22, Visual Studio 2022 C++ Build Tools, the Windows SDK, and the WebView2 Runtime.
 2. Install the pinned Rust toolchain with the x64 MSVC target, Rustfmt, and Clippy.
@@ -45,10 +44,10 @@ Packaging downloads Microsoft's offline WebView2 installer. The dependency lockf
 
 ## Usage
 
-1. Choose a source folder or switch to **Selected files**. You can also drop photos into the window.
-2. Choose a separate destination under **Save to**. Set the file type, naming suffix, and any resize or print-density options.
-3. Choose Quick Fix settings, a preset, or manual adjustments. Select a thumbnail to preview the result before exporting.
-4. Select **Process Photos**. The status bar shows progress and failed exports. To continue an interrupted job, reopen Framebatch and select **Resume** when offered.
+1. Choose a folder or select photos. You can also drop them into Framebatch.
+2. Choose a separate output folder and set the size and file type.
+3. To use a Lightroom preset, select **From file…** under **Lightroom preset** and open an `.xmp` file.
+4. Select **Process Photos**. To continue an interrupted batch, reopen Framebatch and choose **Resume** when it appears.
 
 ### Command line
 
@@ -60,6 +59,9 @@ Packaging downloads Microsoft's offline WebView2 installer. The dependency lockf
 ```
 
 See [the recipe and job contracts](docs/CONTRACTS.md) for the data model.
+
+<details>
+<summary>Print sizing, Quick Fix, and preset compatibility</summary>
 
 ### Print sizing and export settings
 
@@ -125,6 +127,8 @@ The window lists applied and not-applied settings for each preset.
 **Dreamy Pastel** is an original look inspired by soft, airy community camera recipes; it doesn't reproduce any manufacturer's film simulation. It combines lifted blacks and rolled-off highlights, lower contrast, a slightly warm and pink white balance, pastel colors (softer greens and blues, lighter skin tones), teal shadows with peach highlights, Glow 30, fine grain and light sharpening. It is a normal Lightroom preset (`src-tauri/presets/Framebatch_Dreamy_Pastel.xmp`; in Lightroom its glow is plain Clarity −50).
 
 **Golden Glow** is an original warm golden-hour look. It gives amber light with cream highlights, warm brown shadows, deep olive greens, rich but unclipped oranges and reds, light cyan-blue skies, moderately lifted blacks, soft highlights, Glow 12 with sharpening (bloom around light while leaves and textures stay crisp) and light grain. It's also a normal Lightroom preset (`src-tauri/presets/Framebatch_Golden_Glow.xmp`, Clarity −20 in Lightroom).
+
+</details>
 
 ## Known limitations
 
