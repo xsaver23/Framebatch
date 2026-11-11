@@ -1,23 +1,67 @@
-# Framebatch for Windows — personal pilot
+# Framebatch
 
-Version **0.9.0**, Windows x64 personal pilot.
+Framebatch 0.9.0 is a Windows x64 desktop pilot for batch photo resizing, color correction, and export. It opens directly to **Process Multiple Files**. The desktop app uses Tauri 2 and WebView2, and the companion CLI uses the same Rust processing engine.
 
-**Reliability acceptance is blocked.** A 10,000-photo GUI run crashed after 6,929 exports; recovery completed, but three exports differed in their pixels from an identical-input reference. A separate CLI run completed 10,000 files but also produced three differing repeated-input exports. The cause is unresolved. See the accompanying verification report before relying on this pilot for a large batch. Original input files are preserved.
+## Features
 
-Framebatch opens directly to **Process Multiple Files**. Choose Source and a separate Destination, select Quick Fix settings, then **Process Photos**. The selected photo is previewed before and after in the middle of the window; checking it is optional. The original `engine.mjs` prototype was not supplied, so Quick Fix math follows Adobe's documented Elements/Photoshop behavior (see "Quick Fix behavior" below); it is not a verified pixel-for-pixel port of either.
+- **Batch resize and export.** Set dimensions in pixels, physical units, or percent. Fit, center crop, add a white border, or stretch to an exact size. Set print density independently of resizing.
+- **Before and after preview.** Compare the selected photo, zoom to 100%, and move through the batch with the filmstrip.
+- **Quick Fix and manual adjustments.** Apply Auto Levels, Auto Contrast, Auto Color, and Sharpen. Fine-tune tone, color, grading, and effects.
+- **Lightroom preset import.** Use the original **Dreamy Pastel** and **Golden Glow** looks or load a Lightroom/Camera Raw develop preset with **From file…**.
+- **Safe exports and recovery.** Framebatch preserves originals and existing exports. Jobs can be paused, cancelled, and resumed from local SQLite journals.
 
-## Window layout (0.8.0)
+## Screenshots
 
-The layout follows current photo editors such as Lightroom and Capture One, styled like a Windows 11 app:
+**Before / After.** Golden Glow applied to an alpine lake demo image, with batch sizing controls and the filmstrip in view.
 
-- **Left:** batch settings (photos, destination and file naming, image size, file type, performance).
-- **Middle:** a large preview of the selected photo (**Before / After**, **After** or **Before**, plus **100%** detail) with a filmstrip of thumbnails underneath. The arrow buttons and the filmstrip's arrow keys step through photos, across 50-photo pages; in wide windows the enlarge button hides the left panel for a bigger preview (Esc restores it).
-- **Right:** Quick Fix, Look (Lightroom presets) and Adjustments, grouped like Lightroom: Light, Color (with Black & white), Levels, Detail, Tone curve, Color mixer (color swatches), Color grading (Shadows/Midtones/Highlights/Global), Effects and Calibration. Changed sliders are highlighted; double-click a slider's name to reset it.
-- **Bottom:** status, progress and **Process Photos**.
+![Framebatch in dark mode comparing the original alpine lake image with the Golden Glow preview](docs/screenshots/before-after.png)
 
-Dark by default, with a neutral gray behind the photo so the interface doesn't tint how it looks; the sun/moon button switches to a light theme and remembers the choice. Narrow windows stack the preview above the settings. Only the interface changed in 0.8.0: the processing engine and exported files are identical to 0.7.0.
+**Batch export.** Light mode with the processed coastline in view and two successful exports in the status bar.
 
-## Print sizing
+![Framebatch showing two successful demo exports](docs/screenshots/batch-export.png)
+
+Both screenshots are captures of the running Windows app using synthetic demo images.
+
+## Installation and build
+
+Framebatch targets **Windows 11 x64**. Build the installer from a checkout of this repository.
+
+1. Install Node.js 22, Visual Studio 2022 C++ Build Tools, the Windows SDK, and the WebView2 Runtime.
+2. Install the pinned Rust toolchain with the x64 MSVC target, Rustfmt, and Clippy.
+3. Run the build script from the repository root in PowerShell.
+
+```powershell
+rustup toolchain install 1.99.1-x86_64-pc-windows-msvc --profile minimal --component rustfmt --component clippy
+./scripts/build.ps1
+```
+
+The script installs the locked Node.js dependencies, runs the release tests, builds the desktop app and CLI, and packages an unsigned NSIS installer.
+
+- **Installer:** run the generated setup executable under `src-tauri/target/release/bundle/nsis/` to install Framebatch for your Windows user.
+- **CLI:** run `src-tauri/target/release/framebatch-cli.exe` from PowerShell.
+- **GitHub Actions:** the Windows installer workflow runs when dispatched manually or when a tag matching `v*` is pushed.
+
+Packaging downloads Microsoft's offline WebView2 installer. The dependency lockfiles pin the source dependencies, while the external WebView2 package can change.
+
+## Usage
+
+1. Choose a source folder or switch to **Selected files**. You can also drop photos into the window.
+2. Choose a separate destination under **Save to**. Set the file type, naming suffix, and any resize or print-density options.
+3. Choose Quick Fix settings, a preset, or manual adjustments. Select a thumbnail to preview the result before exporting.
+4. Select **Process Photos**. The status bar shows progress and failed exports. To continue an interrupted job, reopen Framebatch and select **Resume** when offered.
+
+### Command line
+
+```powershell
+./src-tauri/target/release/framebatch-cli.exe presets
+./src-tauri/target/release/framebatch-cli.exe preset look.xmp
+./src-tauri/target/release/framebatch-cli.exe run recipe.json journals-folder
+./src-tauri/target/release/framebatch-cli.exe resume job.sqlite --retry
+```
+
+See [the recipe and job contracts](docs/CONTRACTS.md) for the data model.
+
+### Print sizing and export settings
 
 - Original pixels: leave **Resize Images** unchecked. To change only print density, choose **Set to**, then enter **300**.
 - 6 × 4 inch fit: check **Resize Images**, enter Width **6**, Height **4**, Units **inches**, keep **Fit whole photo**, then set **300 PPI**.
@@ -33,91 +77,16 @@ Dark by default, with a neutral gray behind the photo so the interface doesn't t
 
 JPEG quality defaults to 92 and filenames gain `-edited`. Existing output files are never overwritten. JPEG uses a white matte for transparency. PNG and lossless WebP retain alpha. Outputs are tagged sRGB. Camera and GPS metadata are omitted by default. **Keep capture date, camera & exposure** retains a whitelist of valid photographic metadata and always excludes GPS. Damaged optional EXIF metadata is omitted so valid image pixels can still export. WebP print density may be ignored by Windows printing software; choose JPEG or PNG for printing until the intended print application is verified.
 
-## Build on Windows 11 x64
-
-Install Node.js, Rust **1.99.1** with the x64 MSVC target, Visual Studio 2022 C++ Build Tools and Windows SDK. An installed WebView2 Runtime is needed for development. Installer packaging downloads Microsoft's offline WebView2 installer so the resulting setup can work on disconnected machines.
-
-From this directory in PowerShell:
-
-```powershell
-./scripts/build.ps1
-```
-
-The build uses `npm ci`, locked Cargo dependencies, release tests, release binaries and Tauri NSIS packaging. The installer is written under `src-tauri/target/release/bundle/nsis/`. Builds are unsigned for personal pilot use. Signing and timestamping must be configured before wider distribution. Lockfiles reproduce source dependency versions; the vendor's current offline WebView2 package is an external build input, so byte-identical installers are not promised.
-
-For this task's workspace-local Rust installation:
-
-```powershell
-./scripts/build.ps1 -ToolchainRoot ../../work/toolchain
-```
-
-Keep running test executables outside `target/release` to avoid Windows file locks during rebuilds.
-
-## Independent export verification
-
-```powershell
-python -m pip install Pillow numpy psutil
-cargo build --locked --release --features test-hooks --bin framebatch-cli --manifest-path src-tauri/Cargo.toml
-python scripts/verify.py --exe src-tauri/target/release/framebatch-cli.exe --work ../../work/verification-new
-# Rebuild without test hooks before packaging or benchmarking:
-cargo build --locked --release --bin framebatch-cli --manifest-path src-tauri/Cargo.toml
-```
-
-Use a **new** test directory on each run. This exercises the real release engine and reopens the exported files with Pillow, not the Rust decoder. It checks density and all size units, original pixels, all eight EXIF orientations, ICC conversion against an independent color reader, alpha/white matte, source hashes, collisions, corrupt and unsupported files, capture metadata, disk-full simulation, pause/cancel, and forced interruption during encoding and around publication. These are file-level checks; they do not substitute for an installed-app UI test.
-
-## Repeat the large-corpus benchmark
-
-The delivery also includes a production `Framebatch-cli.exe`. With the source ZIP extracted beside it, you can use `--exe ../Framebatch-cli.exe` from the `Framebatch` directory and skip compilation for benchmarks. Python plus Pillow, NumPy and psutil are still required. Fault-injection tests require the separate feature-enabled build described above.
-
-```powershell
-Copy-Item src-tauri/target/release/framebatch-cli.exe ../../work/binaries/framebatch-bench.exe
-python scripts/benchmark.py --exe ../../work/binaries/framebatch-bench.exe --corpus C:/Photos/Representative --work ../../work/benchmark-new --counts 1000 --workers 1 2 4 6 --memory 6144
-python scripts/benchmark.py --exe ../../work/binaries/framebatch-bench.exe --corpus C:/Photos/Representative --work ../../work/benchmark-10000-new --counts 10000 --workers 2 --memory 1024
-```
-
-Use an output drive with enough free space. The benchmark copies a small set of seed files into its work folder and creates bounded hardlink groups there, cycling through the photos to reach the requested count. This avoids NTFS’s per-file link limit and never modifies the original corpus. Export validation reopens every header, hashes every output, and fully decodes each distinct encoded content with Pillow. Identical SHA-256 contents reuse that successful full decode. The provided corpus was ten distinct 25.56 MP Sony A6700 JPEGs; repetition is explicitly recorded. Engine-only private memory is sampled every 50 ms. App/WebView2 and UI responsiveness measurements must be recorded separately.
-
-Repeated identical sources must also produce byte-identical exports. The benchmark records any mismatch in `results.json` and fails the check. `verify_existing.py --reference-output <previous-output-folder>` adds a comparison against an earlier verified run using the exact same recipe and engine, and records all mismatches before failing.
-
-To reproduce the failed six-worker 10,000-photo audit using the delivered CLI (run from the extracted `Framebatch` directory; choose a new work directory):
-
-```powershell
-python scripts/benchmark.py --exe ../Framebatch-cli.exe --corpus C:/Photos/Representative --work ../work/repeat-10000-new --counts 10000 --workers 6 --memory 3072
-```
-
-Record CPU/RAM tuning and whether the run uses the original workstation or another PC. Comparing stock settings or another Windows machine is a diagnostic step; it is not a claim that hardware caused the failure. The benchmark leaves its results and generated files available for inspection even when the final determinism assertion fails.
-
-An independent decoder diagnostic repeatedly decodes with Pillow/libjpeg and compares raw RGB hashes. It does not call Framebatch and does not certify the app. It saves any differing raw RGB buffers locally for investigation and requires a new work directory:
-
-```powershell
-python scripts/diagnose_decode.py --corpus C:/Photos/Representative --work ../work/independent-decoder-new --count 10000 --workers 6
-```
-
-For an 8 GB machine, use `--workers 1 2 --memory 1024`. Close unrelated heavy applications for controlled comparisons and record any applications left running. Actual worker admission is limited by both requested concurrency and memory reservations.
-
-## Recovery
-
-The app stores job recipes and file states in local SQLite journals under `%LOCALAPPDATA%/com.framebatch.desktop/jobs`. Journals are retained; automatic history pruning is not implemented. A restart offers Resume. Finished sources and outputs are hashed before being skipped. Staged results are recovered without replacing existing files. Pause stops new admissions while active photos finish. Cancel stops admissions and checks between processing stages; a codec call already running can take longer to exit.
-
-Supported input/output in this pilot: 8-bit still JPEG, PNG and lossless WebP. Sony ARW, HEIC, GPU acceleration and adjustable lossy WebP are outside this pilot. See the supplied implementation plan and verification report for outstanding release gates.
-
-
-## Review and release limits
-
-Claude Opus 5.5 and Fable 5.1 reviewed isolated source snapshots with explicit High effort; both then reviewed the fixes. The delivery includes their static reviews and the engineering disposition. Neither review independently executed the app. Installed tests and actual exported-file checks are reported separately.
-
-The application version is 0.7.0 with correction engine `framebatch-0.7.0-provisional`. Older correction-engine jobs are not offered for resume. The unavailable prototype prevents exact parity claims.
-
-### Quick Fix behavior (engine 0.5.0)
+### Quick Fix behavior
 
 Modeled on Adobe's documented Photoshop/Elements commands. Adobe's exact implementation is not public, so outputs will be similar to Elements, not identical. Analysis uses the same 960-pixel analysis image for preview and export. Checked fixes run in the dialog's order, each analyzing the previous fix's result.
 
 - **Auto Levels** ("Enhance Per Channel Contrast"): each channel gets its own black and white point, ignoring the darkest/lightest 0.1% (Photoshop default). Can remove or introduce color casts, as in Elements.
 - **Auto Contrast** ("Enhance Monochromatic Contrast"): one black/white point for all channels, ignoring 0.5% (Photoshop default), so colors are not shifted. Flat-color images are left unchanged.
 - **Auto Color** ("Find Dark & Light Colors" + "Snap Neutral Midtones"): the average darkest and lightest 0.5% of pixels become neutral black and white, then a per-channel gamma makes near-neutral midtones gray at the same brightness. Framebatch safeguards: strongly colored extremes are neutralized only partially, gamma is limited to 0.75–1.33, and the midtone step is skipped when fewer than 0.5% of pixels are near-neutral. Warm scenes and saturated subjects are therefore not pulled toward gray, and strong tungsten casts are only partly removed. Use Warmth for the rest.
-- **Sharpen**: unchanged (radius 1 unsharp mask, amount 0.35).
+- **Sharpen** applies an unsharp mask with radius 1 and amount 0.35.
 
-### Lightroom presets and manual looks (0.7.0)
+### Lightroom presets and manual looks
 
 The **Lightroom preset** list in the Look section offers **Dreamy Pastel** and **Golden Glow** (Framebatch's own looks; see below). Use **From file…** to load any Lightroom/Camera Raw develop preset (`.xmp`, or the older `.lrtemplate`).
 
@@ -144,9 +113,8 @@ Order: Quick Fix, preset, manual looks, then the basic manual sliders. Adobe doe
   - tone: Exposure (with highlight roll-off), Contrast, Highlights, Shadows, Whites, Blacks, the parametric curve;
   - color: Temperature/Tint (the non-raw `Incremental` values), Vibrance, Saturation, color mixer (HSL, 8 bands), color grading/split toning, camera calibration, Black & White;
   - effects: Sharpening, vignette, grain, and negative Clarity (rendered as Glow: Clarity −50 is Glow 30).
-- **How effects are placed:** vignette and grain use exported-pixel positions, so the preview and the 100% detail crop match the export. Grain is a position-seeded pattern, so repeated batches are identical.
+- **How effects are placed:** vignette and grain use exported-pixel positions, so the preview and the 100% detail crop match the export. Grain uses a position-seeded pattern.
 - **Reported as not applied:** positive Clarity, Texture, Dehaze, noise reduction, point color, black-and-white mix, profiles, masks/local adjustments, lens corrections, crop, raw (Kelvin) white balance and pre-2012 settings.
-- **Speed:** per-pixel color steps are baked into a 33³ color table per look and memoized per color; vignette and grain use precomputed tables. On the test PC, a 25 MP export with the heaviest built-in preset filters in about 0.6 s, and 6 × 4 in prints in a fraction of that.
 
 The window lists applied and not-applied settings for each preset.
 
@@ -156,31 +124,41 @@ The window lists applied and not-applied settings for each preset.
 
 **Dreamy Pastel** is an original look inspired by soft, airy community camera recipes; it doesn't reproduce any manufacturer's film simulation. It combines lifted blacks and rolled-off highlights, lower contrast, a slightly warm and pink white balance, pastel colors (softer greens and blues, lighter skin tones), teal shadows with peach highlights, Glow 30, fine grain and light sharpening. It is a normal Lightroom preset (`src-tauri/presets/Framebatch_Dreamy_Pastel.xmp`; in Lightroom its glow is plain Clarity −50).
 
-**Golden Glow** is an original warm golden-hour look, tuned against a set of autumn reference photos the owner supplied (measured for tones and colors only; the photos aren't included). It gives amber light with cream highlights, warm brown shadows, deep olive greens, rich but unclipped oranges and reds, light cyan-blue skies, moderately lifted blacks, soft highlights, Glow 12 with sharpening (bloom around light while leaves and textures stay crisp) and light grain. It's also a normal Lightroom preset (`src-tauri/presets/Framebatch_Golden_Glow.xmp`, Clarity −20 in Lightroom).
+**Golden Glow** is an original warm golden-hour look. It gives amber light with cream highlights, warm brown shadows, deep olive greens, rich but unclipped oranges and reds, light cyan-blue skies, moderately lifted blacks, soft highlights, Glow 12 with sharpening (bloom around light while leaves and textures stay crisp) and light grain. It's also a normal Lightroom preset (`src-tauri/presets/Framebatch_Golden_Glow.xmp`, Clarity −20 in Lightroom).
 
-Older recipes and jobs have no glow value, so they export exactly as before.
+## Known limitations
 
-Use **From file…** to load Lightroom `.xmp` presets.
+- **Pilot reliability.** In a prior 10,000-photo GUI run, the app crashed after 6,929 exports. Recovery completed the job, but three repeated-input exports differed in their pixels. A separate 10,000-photo CLI run also produced three differing repeated-input exports. The cause remains unresolved.
+- **Formats.** The pilot supports 8-bit still JPEG, PNG, and lossless WebP. Sony ARW and HEIC are unsupported. GPU acceleration and adjustable lossy WebP are outside this version.
+- **Adobe compatibility.** Quick Fix and Lightroom preset rendering approximate Adobe's processing. The original Quick Fix prototype was unavailable for parity testing. The Look panel lists which preset settings were applied or skipped.
+- **Recovery.** Jobs are stored under `%LOCALAPPDATA%/com.framebatch.desktop/jobs`. Journals accumulate until removed manually. Resume checks source and output hashes and recovers staged results without replacing existing files. This app uses correction engine `framebatch-0.7.0-provisional`. Jobs made with older correction engines are ineligible for resume.
+- **Distribution.** Installer builds are unsigned. Windows printing software can ignore WebP density, so use JPEG or PNG for print workflows.
 
-0.4.x used a luma-histogram stretch for Auto Contrast, which clipped saturated colors and shadows, and a gray-world gain for Auto Color, which put blue/lavender casts on lawns, skin and warm interiors. Both are replaced.
+## Verification and benchmarks
 
-Additional regression commands:
-
-```powershell
-python scripts/verify_adjustments.py --exe ../../work/binaries/framebatch-bench.exe --work ../../work/adjustments-new
-python scripts/verify_windows_paths.py --exe ../../work/binaries/framebatch-bench.exe --work ../../work/windows-paths-new
-python scripts/verify_review.py --exe ../../work/binaries/framebatch-bench.exe --work ../../work/review-checks-new --sony C:/Photos/SonyA6700
-```
-
-The last command includes a camera-specific 350 PPI assertion for the supplied Sony corpus; omit that suite or adapt the expected source density for another camera. General benchmark validation derives dimensions from each original and is not hardcoded to this camera.
-
-
-To repeat the combined app/WebView2 measurement, open the installed app, choose and scan the corpus, then run this in PowerShell before clicking **Process Photos**:
+Run the Rust checks from `src-tauri`:
 
 ```powershell
-$framebatchProcess = Get-Process framebatch | Select-Object -First 1
-$framebatchJournal = Get-ChildItem "$env:LOCALAPPDATA/com.framebatch.desktop/jobs" -Filter '*.sqlite' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-python scripts/measure_app.py --pid $framebatchProcess.Id --journal $framebatchJournal.FullName --output ../../work/app-memory-new.json
+cargo +1.99.1 fmt --check
+cargo +1.99.1 clippy --offline --locked --release --all-targets -- -D warnings
+cargo +1.99.1 test --offline --locked --release
 ```
 
-Keep exactly one Framebatch instance open for that command. Repeat 1,000 then 10,000 photos at identical worker/memory settings in the same process. Record the displayed preview timings separately; the monitor observes processes and journals, not UI input. It samples private bytes every 50 ms and detects job transitions every 250 ms, so elapsed times have roughly 250 ms observation granularity.
+The offline checks require the locked dependencies to be available in the local Cargo cache. For independent file-level export verification, run these commands from the repository root:
+
+```powershell
+python -m pip install Pillow numpy psutil
+cargo build --locked --release --features test-hooks --bin framebatch-cli --manifest-path src-tauri/Cargo.toml
+python scripts/verify.py --exe src-tauri/target/release/framebatch-cli.exe --work ../framebatch-verify
+cargo build --locked --release --bin framebatch-cli --manifest-path src-tauri/Cargo.toml
+```
+
+Use a new work directory for each run. The export checks reopen the outputs with Pillow and cover sizing, EXIF orientation, ICC conversion, metadata, collision protection, and recovery. The final command restores the production CLI without fault-injection hooks.
+
+To benchmark a representative corpus with the production CLI:
+
+```powershell
+python scripts/benchmark.py --exe src-tauri/target/release/framebatch-cli.exe --corpus "C:/Photos/Representative" --work ../framebatch-benchmark --counts 1000 --workers 2 --memory 1024
+```
+
+Replace the example corpus path with a folder of representative photos. The benchmark stages copies and hardlinks in its own work directory, validates exports, and fails if repeated identical inputs produce different results. Use `--counts 10000` to exercise the larger batch. See [the implementation plan](docs/Framebatch_Windows_Implementation_Plan.md) for engineering context.
